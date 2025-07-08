@@ -1,69 +1,49 @@
-# Create PRP
+# Generate PRP (Project Requirements & Planning)
 
-## Feature file: $ARGUMENTS
+## Your Role: Orchestrator
 
-Generate a complete PRP for general feature implementation with thorough research. Ensure context is passed to the AI agent to enable self-validation and iterative refinement. Read the feature file first to understand what needs to be created, how the examples provided help, and any other considerations.
+You are Claude Code, acting as the **Orchestrator** for the PRP generation process. Your job is to:
 
-The AI agent only gets the context you are appending to the PRP and training data. Assuma the AI agent has access to the codebase and the same knowledge cutoff as you, so its important that your research findings are included or referenced in the PRP. The Agent has Websearch capabilities, so pass urls to documentation and examples.
+1. **Execute scripts sequentially** to gather context and deploy Sub-Agents
+2. **Coordinate the entire PRP generation flow**
+3. **Ensure each Sub-Agent receives the correct prompt and context**
 
-## Research Process
+## Process Flow
 
-1. **Codebase Analysis**
-   - Search for similar features/patterns in the codebase
-   - Identify files to reference in PRP
-   - Note existing conventions to follow
-   - Check test patterns for validation approach
-
-2. **External Research**
-   - Search for similar features/patterns online
-   - Library documentation (include specific URLs)
-   - Implementation examples (GitHub/StackOverflow/blogs)
-   - Best practices and common pitfalls
-
-3. **User Clarification** (if needed)
-   - Specific patterns to mirror and where to find them?
-   - Integration requirements and where to find them?
-
-## PRP Generation
-
-Using PRPs/templates/prp_base.md as template:
-
-### Critical Context to Include and pass to the AI agent as part of the PRP
-- **Documentation**: URLs with specific sections
-- **Code Examples**: Real snippets from codebase
-- **Gotchas**: Library quirks, version issues
-- **Patterns**: Existing approaches to follow
-
-### Implementation Blueprint
-- Start with pseudocode showing approach
-- Reference real files for patterns
-- Include error handling strategy
-- list tasks to be completed to fullfill the PRP in the order they should be completed
-
-### Validation Gates (Must be Executable) eg for python
+### Step 1: Initialize
+Run the first script to gather project context:
 ```bash
-# Syntax/Style
-ruff check --fix && mypy .
-
-# Unit Tests
-uv run pytest tests/ -v
-
+bash .claude/scripts/generate/gather-project-context.sh
 ```
 
-*** CRITICAL AFTER YOU ARE DONE RESEARCHING AND EXPLORING THE CODEBASE BEFORE YOU START WRITING THE PRP ***
+### Step 2: Sequential Sub-Agent Deployment
+After Step 1, the script will tell you which script to run next. Continue this pattern:
+- Run the indicated script
+- The script will output either:
+  - **For Sub-Agents**: A complete prompt to deploy a Sub-Agent
+  - **For Orchestrator**: Instructions for your next action
 
-*** ULTRATHINK ABOUT THE PRP AND PLAN YOUR APPROACH THEN START WRITING THE PRP ***
+### Step 3: Sub-Agent Deployment Pattern
+When a script outputs a Sub-Agent prompt:
+1. **Deploy the Sub-Agent** using the Task tool with the exact prompt provided
+2. **Wait for the Sub-Agent to complete** their work
+3. **Run the next script** as indicated
 
-## Output
-Save as: `PRPs/{feature-name}.md`
+### Step 4: Final Coordination
+Continue until all scripts are executed and the PRP is complete.
 
-## Quality Checklist
-- [ ] All necessary context included
-- [ ] Validation gates are executable by AI
-- [ ] References existing patterns
-- [ ] Clear implementation path
-- [ ] Error handling documented
+## Important Notes
 
-Score the PRP on a scale of 1-10 (confidence level to succeed in one-pass implementation using claude codes)
+- **Follow the script outputs exactly** - they contain dynamic, context-aware instructions
+- **Deploy Sub-Agents sequentially** - never in parallel
+- **Each Sub-Agent updates specific sections** in the PRP template
+- **The process is project-agnostic** - driven by INITIAL.md content
 
-Remember: The goal is one-pass implementation success through comprehensive context.
+## Success Criteria
+
+The process is complete when:
+- All scripts have been executed
+- All Sub-Agents have updated their sections
+- The final PRP file `PRPs/PRP_{project_name}.md` exists and is complete
+
+Begin by running the first script: `bash .claude/scripts/generate/gather-project-context.sh`
